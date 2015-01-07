@@ -15,7 +15,7 @@ class image_converter:
     self.image_pub = rospy.Publisher("/site_violation_detection/image_raw",Image, queue_size=10)
     cv2.namedWindow("Image window", 1)
     self.bridge = CvBridge()
-    self.image_sub = rospy.Subscriber("/image_raw",Image,self.callback)
+    self.image_sub = rospy.Subscriber("/web_cam/image_raw",Image,self.callback)
     
   def callback(self,data):
     try:
@@ -29,9 +29,9 @@ class image_converter:
 
     cv2.putText(cvImage,"Robotics Institute", (50, rows / 2), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
     cv2.putText(cvImage,"Khalifa University", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0),2)
-    
-    cv2.imshow("Image window", cvImage)
-    cv2.waitKey(3)
+	
+    #cv2.imshow("Image window", cvImage)
+    #cv2.waitKey(3)
 
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cvImage, "bgr8"))
