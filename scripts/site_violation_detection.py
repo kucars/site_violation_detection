@@ -13,6 +13,8 @@ from pylab import *
 from datetime import datetime
 import time
 import os
+import os
+import glob
 
 lastTimeImageAnalysed = datetime.now()
 imagesFolder = ''
@@ -30,10 +32,14 @@ class image_converter:
     self.image_sub = rospy.Subscriber("/web_cam/image_raw",Image,self.callback)
     #Create TimeStamped Image folder
     ts = time.time()
-    imagesFolder = '~/webcam_images/' + datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S') + '/'
+    imagesFolder = '/home/odroid/workspace/webcam_images/' + datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S') + '/'
     d = os.path.dirname(imagesFolder)
-    
-    imagesFolder2 = '~/violation_images/' + datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S') + '/'
+
+    #clear old violation images (the webapp should display only recent images)    
+    files = glob.glob('/home/odroid/workspace/violation_images/*')
+    for f in files:
+      os.remove(f)
+    imagesFolder2 = '/home/odroid/workspace/violation_images/'
     d = os.path.dirname(imagesFolder)
     
     if not os.path.exists(d):
