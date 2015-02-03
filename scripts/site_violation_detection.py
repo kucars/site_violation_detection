@@ -27,7 +27,7 @@ class image_converter:
     self.image_sub = rospy.Subscriber("/web_cam/image_raw",Image,self.callback)
     #Create TimeStamped Image folder
     ts = time.time()
-    imagesFolder = '/home/odroid/workspace/webcam_images/' + datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S') + '/'
+    imagesFolder = '~/webcam_images/' + datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S') + '/'
     d = os.path.dirname(imagesFolder)
     if not os.path.exists(d):
         os.makedirs(d)
@@ -47,39 +47,56 @@ class image_converter:
       print e
     im3 = cvImage.copy()
     (rows,cols,channels) = im3.shape
-    cv2.putText(im3,"violation detected", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
-    ## convert to hsv color space
-    #image2 = cv2.cvtColor(cvImage,cv2.COLOR_BGR2HSV)
-    ## define the list of boundaries for blue color
-    #lower = np.array([110, 50, 50])
-    #upper = np.array([130, 255, 255])
-	## find the colors within the specified boundaries and apply
-	## the mask
-    #mask   = cv2.inRange(image2, lower, upper)
-    #output = cv2.bitwise_and(image2, image2, mask = mask)
-    #im3 = cvImage.copy()
-	## show the images
-    #if mask.any() != 0:
-      #cv2.putText(im3,"violation detected", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
-    #im = cvImage.copy()
-    ## convert the image to grayscale
-    #gray = cv2.cvtColor(im.copy(), cv2.COLOR_BGR2GRAY)
+    element = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+    
+    gray =cv2.cvtColor(im3,cv2.COLOR_BGR2GRAY) # convert to gray scale
+    eroded = cv2.erode(gray,element) # erode the image
+    edg = cv2.Canny(eroded,50,50) # detect edges canny
+    contours, hierarchy = cv2.findContours(edg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # find contours
+    c = max(contours, key = cv2.contourArea) # find maximum contour
+    x,y,w,h = cv2.boundingRect(c) # find the rectangle that surrounds the contour
+    cv2.rectangle(im3, (x,y),(x+w,y+h), (0,255,0), 3)# Draw the rectangle that surrounds the maximum contour
+    k=cv2.minAreaRect(c)
+    width = min(k[1])
+    length = max(k[1])
+    cv2.imshow('Live',cvImage)
+    if length <= 1.1*width or width >= 0.9*length:
+      cv2.putText(im3,"violation(dimension)", (2, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
+      cv2.imshow('Violation 1',im3)
+      cv2.waitKey(5)
+    else:
+      cv2.imshow('Violation 1',im3)
+      cv2.waitKey(5)
+    #cv2.putText(im3,"violation detected", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
+    # convert to hsv color space
+    image2 = cv2.cvtColor(cvImage,cv2.COLOR_BGR2HSV)
+    # define the list of boundaries for blue color
+    lower = np.array([110, 150, 150])
+    upper = np.array([130, 255, 255])
+    # find the colors within the specified boundaries and apply the mask
+    mask   = cv2.inRange(image2, lower, upper)
+    output = cv2.bitwise_and(image2, image2, mask = mask)
+    im2 = cvImage.copy()
+    # show the images
+    if mask.any() != 0:
+      cv2.putText(im2,"Human presence", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
+      cv2.imshow('Violation 2',im2)
+    else:
+      cv2.imshow('Violation 2',im2)
+
+
     #th3 = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,15,11)
-    #edged = cv2.Canny(th3, 35, 100)
-    ## find the contours in the edged image and keep the largest one;
-    #(cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    #c = max(cnts, key = cv2.contourArea)
-    ## compute the bounding box of the of the paper region and return it
-    #k=cv2.minAreaRect(c)
-    #width = min(k[1])
-    #length = max(k[1])
-    #area = width*length 
-    #x,y,w,h = cv2.boundingRect(c)
-    #cv2.rectangle(im, (x,y),(x+w,y+h), (0,0,255), 3)
-    #if length <= 1.1*width or width >= 0.9*length:
-      #cv2.putText(im,"violation detected", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
+
     imageName = imagesFolder + 'analysedImage' + ("%03d" % imageCounter) + '.png'
-    cv2.imwrite(imageName, cvImage)      
+    cv2.imwrite(imageName, cvImage)   
+    
+    ViolationName_h = imagesFolder + 'ViolationImage_h' + ("%03d" % imageCounter) + '.png'
+    cv2.imwrite(ViolationName_h, im2) 
+    
+    ViolationName_d = imagesFolder + 'ViolationImage_d' + ("%03d" % imageCounter) + '.png'
+    cv2.imwrite(ViolationName_d, im3) 
+    
+    
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(im3, "bgr8"))
     except CvBridgeError, e:
