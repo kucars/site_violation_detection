@@ -19,8 +19,11 @@ imagesFolder = ''
 imageCounter = 0
 class image_converter:
   global imagesFolder
+  global imagesFolder2
+  
   def __init__(self):
     global imagesFolder
+    global imagesFolder2
     rospy.init_node('site_violation_detection', anonymous=True)
     self.image_pub = rospy.Publisher("/site_violation_detection/image_raw",Image, queue_size=10)
     self.bridge = CvBridge()
@@ -29,6 +32,10 @@ class image_converter:
     ts = time.time()
     imagesFolder = '~/webcam_images/' + datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S') + '/'
     d = os.path.dirname(imagesFolder)
+    
+    imagesFolder2 = '~/violation_images/' + datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S') + '/'
+    d = os.path.dirname(imagesFolder)
+    
     if not os.path.exists(d):
         os.makedirs(d)
         
@@ -64,6 +71,8 @@ class image_converter:
       cv2.putText(im3,"violation(dimension)", (2, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
       cv2.imshow('Violation 1',im3)
       cv2.waitKey(5)
+      ViolationName_d = imagesFolder2 + 'ViolationImage_d' + ("%03d" % imageCounter) + '.png'
+      cv2.imwrite(ViolationName_d, im3) 
     else:
       cv2.imshow('Violation 1',im3)
       cv2.waitKey(5)
@@ -81,6 +90,8 @@ class image_converter:
     if mask.any() != 0:
       cv2.putText(im2,"Human presence", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
       cv2.imshow('Violation 2',im2)
+      ViolationName_h = imagesFolder2 + 'ViolationImage_h' + ("%03d" % imageCounter) + '.png'
+      cv2.imwrite(ViolationName_h, im2) 
     else:
       cv2.imshow('Violation 2',im2)
 
@@ -90,11 +101,11 @@ class image_converter:
     imageName = imagesFolder + 'analysedImage' + ("%03d" % imageCounter) + '.png'
     cv2.imwrite(imageName, cvImage)   
     
-    ViolationName_h = imagesFolder + 'ViolationImage_h' + ("%03d" % imageCounter) + '.png'
-    cv2.imwrite(ViolationName_h, im2) 
+    #ViolationName_h = imagesFolder2 + 'ViolationImage_h' + ("%03d" % imageCounter) + '.png'
+    #cv2.imwrite(ViolationName_h, im2) 
     
-    ViolationName_d = imagesFolder + 'ViolationImage_d' + ("%03d" % imageCounter) + '.png'
-    cv2.imwrite(ViolationName_d, im3) 
+    #ViolationName_d = imagesFolder2 + 'ViolationImage_d' + ("%03d" % imageCounter) + '.png'
+    #cv2.imwrite(ViolationName_d, im3) 
     
     
     try:
