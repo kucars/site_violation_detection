@@ -62,10 +62,11 @@ class image_converter:
     (rows,cols,channels) = im3.shape
     element = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
     
-    gray =cv2.cvtColor(im3,cv2.COLOR_BGR2GRAY) # convert to gray scale
-    eroded = cv2.erode(gray,element) # erode the image
-    edg = cv2.Canny(eroded,50,50) # detect edges canny
-    contours, hierarchy = cv2.findContours(edg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # find contours
+    gray = cv2.cvtColor(im3,cv2.COLOR_BGR2GRAY) # convert to gray scale
+    #eroded = cv2.erode(gray,element) # erode the image
+    #edg = cv2.Canny(eroded,50,50) # detect edges canny
+    filtered = cv2.adaptiveThreshold(gray,  255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 41, 3)
+    contours, hierarchy = cv2.findContours(filtered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # find contours
     c = max(contours, key = cv2.contourArea) # find maximum contour
     x,y,w,h = cv2.boundingRect(c) # find the rectangle that surrounds the contour
     cv2.rectangle(im3, (x,y),(x+w,y+h), (0,255,0), 3)# Draw the rectangle that surrounds the maximum contour
