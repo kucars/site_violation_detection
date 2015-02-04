@@ -36,7 +36,7 @@ class image_converter:
     ts = time.time()
     imagesFolder = home + '/workspace/webcam_images/' + datetime.fromtimestamp(ts).strftime('%Y_%m_%d_%H_%M_%S') + '/'
     d = os.path.dirname(imagesFolder)
-    violationImagesFolder = home + '/workspace/violation_images/'
+    violationImagesFolder = '/var/www/html/wordpress/wp-content/themes/violation_images/'
     
     #clear old violation images (the webapp should display only recent images)    
     files = glob.glob( violationImagesFolder + '*')
@@ -70,7 +70,7 @@ class image_converter:
     #edg = cv2.Canny(eroded,50,50) # detect edges canny
     filtered = cv2.adaptiveThreshold(gray,  255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 21, 1)
     #cv2.imshow('Filtered',filtered)
-    contours, hierarchy = cv2.findContours(filtered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # find contours
+    image, contours, hierarchy = cv2.findContours(filtered, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # find contours
     #cv2.drawContours(cnt, contours, -1, (0,255,0), 3)
     #cv2.imshow('Contours',cnt)
     
@@ -85,6 +85,8 @@ class image_converter:
     if length <= 1.1*width or width >= 0.9*length:
       cv2.putText(im3,"Violation Detected", (2, rows / 2), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
       cv2.putText(im3,"Exceeded Allowed Dimensions", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,255),2)
+      ts = time.time()
+      cv2.putText(im3,datetime.fromtimestamp(ts).strftime('%Y/%m/%d %H:%M:%S'), (10, rows - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255),1)
       #cv2.imshow('Violation 1',im3)
       #cv2.waitKey(5)
       ViolationName_d = violationImagesFolder + 'ViolationImage_dimension' + ("%03d" % imageCounter) + '.png'
@@ -104,7 +106,9 @@ class image_converter:
     im2 = cvImage.copy()
     # show the images
     if mask.any() != 0:
-      cv2.putText(im2,"Human presence detected", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
+      cv2.putText(im2,"Human Detected", (50, rows / 2 + 50), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255),2)
+      ts = time.time()
+      cv2.putText(im2,datetime.fromtimestamp(ts).strftime('%Y/%m/%d %H:%M:%S'), (10, rows - 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255),1)      
       #cv2.imshow('Violation 2',im2)
       ViolationName_h = violationImagesFolder + 'ViolationImage_human' + ("%03d" % imageCounter) + '.png'
       cv2.imwrite(ViolationName_h, im2) 
