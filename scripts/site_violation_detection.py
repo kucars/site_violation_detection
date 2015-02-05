@@ -75,10 +75,13 @@ class image_converter:
     #cv2.imshow('Contours',cnt)
     
     c = max(contours, key = cv2.contourArea) # find maximum contour
-    x,y,w,h = cv2.boundingRect(c) # find the rectangle that surrounds the contour
-    cv2.rectangle(im3, (x,y),(x+w,y+h), (0,255,0), 3)# Draw the rectangle that surrounds the maximum contour
+    #x,y,w,h = cv2.boundingRect(c) # find the rectangle that surrounds the contour
+    #cv2.rectangle(im3, (x,y),(x+w,y+h), (0,255,0), 3)# Draw the rectangle that surrounds the maximum contour
     #cv2.drawContours(im3, c, -1, (255,255,0), 3)
     k=cv2.minAreaRect(c)
+    box = cv2.boxPoints(k)
+    box = np.int0(box)
+    cv2.drawContours(im3,[box],0,(0,255,0),3)
     width = min(k[1])
     length = max(k[1])
     #cv2.imshow('Live',cvImage)
