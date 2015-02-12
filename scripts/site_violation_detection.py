@@ -26,7 +26,7 @@ lastTimeHImageSaved     = datetime.now()
 imagesFolder = ''
 imageCounter = 0
 #How often in seconds to analyse streamed images
-analysisTime = 5
+analysisTime = 2
 #How often in seconds to publish analysis results
 publishingTime = 1
 # Saving time
